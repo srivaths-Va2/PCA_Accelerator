@@ -27,7 +27,7 @@ module identity_matrix(
     output I_20, output I_21, output I_22, output I_23,
     output I_30, output I_31, output I_32, output I_33
     );
-   
+    // register to store I
     reg [31:0] identity [0:3][0:3];
     
     // define the shift registers
