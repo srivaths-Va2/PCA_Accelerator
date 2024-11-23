@@ -3,12 +3,12 @@
 // Engineer: Srivaths Ramasubramanian
 // 
 // Create Date: 17.11.2024 19:30:12
-// Design Name: math_unit/processing_element
-// Module Name: processing_element
-// Project Name: PCA_Accelerator
+// Design Name: 
+// Module Name: math_unit/processing_element
+// Project Name: processing_element
 // Target Devices: Xilinx Artix-7 cpg236
 // Tool Versions: Vivado 2024.1
-// Description: To perform basic MAC operation
+// Description: To perform MAC operation
 // 
 // Dependencies: NA
 // 
@@ -36,8 +36,29 @@ module processing_element(
     4) It also passes the output (in2) through for the next PE
     */
     
-    reg [15:0] product; 
+    reg [15:0] product;
     
+    always @(negedge rst) 
+    begin
+        if (rst == 1'b0) 
+        begin
+            psum <= 16'd0;  // Reset psum to 0 when reset is asserted
+        end
+    end 
+    
+    always @(posedge clk) 
+    begin
+        if (rst == 1'b1) 
+        begin
+            // Perform multiplication and accumulate in psum
+            product = in1 * in2; 
+            psum <= psum + product;
+        end
+        // Pass through in2 for the next PE
+        out1 <= in2;
+    end
+    
+    /*
     always@(posedge clk or posedge rst) 
         begin
             if (rst == 1'b1) 
@@ -54,5 +75,6 @@ module processing_element(
         // Pass through in2 for the next PE
         out1 <= in2;
     end
+    */
 endmodule
 
