@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Engineer: Srivaths Ramasubramanian
+// Institution : RV College of Engineering
+// Engineers: Srivaths Ramasubramanian, Anjali Devarajan, Kousthub Kaivar, Vibha Shrestta, Shashank D
 // 
 // Create Date: 16.01.2025 18:59:26
 // Design Name: fixed_point_multiplier

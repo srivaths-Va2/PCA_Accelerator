@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Engineer: Srivaths Ramasubramanian
+// Institution : RV College of Engineering
+// Engineers: Srivaths Ramasubramanian, Anjali Devarajan, Kousthub Kaivar, Vibha Shrestta, Shashank D
 // 
 // Create Date: 16.01.2025 11:51:55
 // Design Name: controller
