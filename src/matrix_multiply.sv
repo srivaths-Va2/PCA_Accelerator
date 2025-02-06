@@ -52,6 +52,9 @@ module matrix_multiply#(parameter MATRIX_SIZE = 4, DATA_SIZE = 8)
     input logic [DATA_SIZE-1:0] in_a [MATRIX_SIZE-1:0],
     input logic [DATA_SIZE-1:0] in_b [MATRIX_SIZE-1:0],
     input logic reset, clk,
+ // the output is row aligned => row_1 = 0 1 2 3 so on
+ // output is represented as a linear array of elements
+ // the output elements can have one extra bit for carry
     output logic [DATA_SIZE-1:0] out_matrix [MATRIX_SIZE*MATRIX_SIZE-1:0],
     output logic done
  );
@@ -59,7 +62,7 @@ module matrix_multiply#(parameter MATRIX_SIZE = 4, DATA_SIZE = 8)
 	logic [DATA_SIZE-1:0] row_wire [MATRIX_SIZE*MATRIX_SIZE-1:0];
 	logic [DATA_SIZE-1:0] col_wire [MATRIX_SIZE*MATRIX_SIZE-1:0];
 	
-	// A counter that triggers the done signal
+	// for counter to trigger done signal
 	logic[4:0] counter;
 
 	// add all the blocks which are not connected directly to the inputs

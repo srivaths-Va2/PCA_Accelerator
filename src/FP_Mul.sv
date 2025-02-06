@@ -51,7 +51,7 @@ module fixed_point_multiplier(
     assign multiplicand = a;
     assign multiplier = b;
         
-    assign f_result = multiplicand[7:0] * multiplier[7:0];      //We remove the sign bit for multiplication
+    assign f_result = multiplicand[7:0] * multiplier[7:0]; //We remove the sign bit for multiplication
     assign quantized_result = f_result[12:5];  
         
     assign prod = quantized_result;

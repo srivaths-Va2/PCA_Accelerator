@@ -53,6 +53,7 @@ class SerialInterface:
             self.ser.close()
             print("Serial connection closed.")
 
+'''
 # __main__#
 
 port = "COM1"       # Change to the correct port accordingly
@@ -70,3 +71,5 @@ Ser.receive_from_FPGA()
 
 # Closing the port
 Ser.close()
+
+'''

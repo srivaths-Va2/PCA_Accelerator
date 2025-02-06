@@ -46,6 +46,7 @@
 
 module controller_givensmatrix(
         input logic clk,
+        input enable_givens_controller,
         input logic [1 : 0] p,
         input logic [1 : 0] q,
         input logic [7 : 0] cos_data,
@@ -53,116 +54,132 @@ module controller_givensmatrix(
         output logic ena_givens,
         output logic wea_givens,
         output logic [1 : 0] addra_givens,
-        output logic [31 : 0] dina_givens  
+        output logic [31 : 0] dina_givens,
+        output logic done_writing_givens  
     );
     
     always@(posedge clk)
-        begin   
-            case({p, q})
-                // case when p = 0 and q is varying
-                4'b00_01 : begin
+        begin 
+            if(enable_givens_controller == 1'b1)
+                begin  
+                case({p, q})
+                    // case when p = 0 and q is varying
+                    4'b00_01 : begin
+                            ena_givens <= 1'b1;
+                            wea_givens <= 1'b1;
+                            addra_givens <= 2'b00;
+                            dina_givens <= {cos_data, sin_data, 8'b0000_0000, 8'b0000_0000};
+                            addra_givens <= 2'b01;
+                            dina_givens <= {(-1 * sin_data), cos_data, 8'b0000_0000, 8'b0000_0000};
+                            done_writing_givens <= 1'b1;
+                        end
+                    4'b00_10 : begin
                         ena_givens <= 1'b1;
                         wea_givens <= 1'b1;
                         addra_givens <= 2'b00;
-                        dina_givens <= {cos_data, sin_data, 8'b0000_0000, 8'b0000_0000};
-                        addra_givens <= 2'b01;
-                        dina_givens <= {(-1 * sin_data), cos_data, 8'b0000_0000, 8'b0000_0000};
+                        dina_givens <= {cos_data, 8'b0000_0000, sin_data, 8'b0000_0000};
+                        addra_givens <= 2'b10;
+                        dina_givens <= {(-1 * sin_data), 8'b0000_0000, cos_data, 8'b0000_0000};
+                        done_writing_givens <= 1'b1;
                     end
-                4'b00_10 : begin
-                    ena_givens <= 1'b1;
-                    wea_givens <= 1'b1;
-                    addra_givens <= 2'b00;
-                    dina_givens <= {cos_data, 8'b0000_0000, sin_data, 8'b0000_0000};
-                    addra_givens <= 2'b10;
-                    dina_givens <= {(-1 * sin_data), 8'b0000_0000, cos_data, 8'b0000_0000};
-                end
-                4'b00_11 : begin
-                    ena_givens <= 1'b1;
-                    wea_givens <= 1'b1;
-                    addra_givens <= 2'b00;
-                    dina_givens <= {cos_data, 8'b0000_0000, 8'b0000_0000, sin_data};
-                    addra_givens <= 2'b11;
-                    dina_givens <= {(-1 * sin_data), 8'b0000_0000, 8'b0000_0000, cos_data};
-                end
-                
-                // case when p = 1 and q is varying
-                4'b01_00 : begin
-                    ena_givens <= 1'b1;
-                    wea_givens <= 1'b1;
-                    addra_givens <= 2'b01;
-                    dina_givens <= {sin_data, cos_data, 8'b0000_0000, 8'b0000_0000};
-                    addra_givens <= 2'b00;
-                    dina_givens <= {cos_data, (-1 * sin_data), 8'b0000_0000, 8'b0000_0000};
-                end
-                4'b01_10 : begin
-                    ena_givens <= 1'b1;
-                    wea_givens <= 1'b1;
-                    addra_givens <= 2'b01;
-                    dina_givens <= {8'b0000_0000, cos_data, sin_data, 8'b0000_0000};
-                    addra_givens <= 2'b10;
-                    dina_givens <= {8'b0000_0000, (-1 * sin_data), cos_data, 8'b0000_0000};
-                end
-                4'b01_11 : begin
-                    ena_givens <= 1'b1;
-                    wea_givens <= 1'b1;
-                    addra_givens <= 2'b01;
-                    dina_givens <= {8'b0000_0000, cos_data, 8'b0000_0000, sin_data};
-                    addra_givens <= 2'b11;
-                    dina_givens <= {8'b0000_0000, (-1 * sin_data), 8'b0000_0000, cos_data};
-                end
-                
-                // case when p = 2 and q is varying
-                4'b10_00 : begin
-                    ena_givens <= 1'b1;
-                    wea_givens <= 1'b1;
-                    addra_givens <= 2'b10;
-                    dina_givens <= {sin_data, 8'b0000_0000, cos_data, 8'b0000_0000};
-                    addra_givens <= 2'b00;
-                    dina_givens <= {cos_data, 8'b0000_0000, (-1 * sin_data), 8'b0000_0000};
-                end
-                4'b10_01 : begin
-                    ena_givens <= 1'b1;
-                    wea_givens <= 1'b1;
-                    addra_givens <= 2'b10;
-                    dina_givens <= {8'b0000_0000, sin_data, cos_data, 8'b0000_0000};
-                    addra_givens <= 2'b01;
-                    dina_givens <= {8'b0000_0000, cos_data, (-1 * sin_data), 8'b0000_0000};
-                end
-                4'b10_11 : begin
-                    ena_givens <= 1'b1;
-                    wea_givens <= 1'b1;
-                    addra_givens <= 2'b10;
-                    dina_givens <= {8'b0000_0000, 8'b0000_0000, cos_data, sin_data};
-                    addra_givens <= 2'b11;
-                    dina_givens <= {8'b0000_0000, 8'b0000_0000, (-1 * sin_data), cos_data};
-                end
-                
-                // case when p = 3 and q is varying
-                4'b11_00 : begin
-                    ena_givens <= 1'b1;
-                    wea_givens <= 1'b1;
-                    addra_givens <= 2'b11;
-                    dina_givens <= {8'b0000_0000, 8'b0000_0000, sin_data, cos_data};
-                    addra_givens <= 2'b00;
-                    dina_givens <= {8'b0000_0000, 8'b0000_0000, cos_data, (-1 * sin_data)};
-                end
-                4'b11_01 : begin
-                    ena_givens <= 1'b1;
-                    wea_givens <= 1'b1;
-                    addra_givens <= 2'b11;
-                    dina_givens <= {8'b0000_0000, sin_data, 8'b0000_0000, cos_data};
-                    addra_givens <= 2'b01;
-                    dina_givens <= {8'b0000_0000, cos_data, 8'b0000_0000, (-1 * sin_data)};
-                end
-                4'b11_10 : begin
-                    ena_givens <= 1'b1;
-                    wea_givens <= 1'b1;
-                    addra_givens <= 2'b11;
-                    dina_givens <= {8'b0000_0000, 8'b0000_0000, sin_data, cos_data};
-                    addra_givens <= 2'b10;
-                    dina_givens <= {8'b0000_0000, 8'b0000_0000, cos_data, (-1 * sin_data)};
-                end
-            endcase
+                    4'b00_11 : begin
+                        ena_givens <= 1'b1;
+                        wea_givens <= 1'b1;
+                        addra_givens <= 2'b00;
+                        dina_givens <= {cos_data, 8'b0000_0000, 8'b0000_0000, sin_data};
+                        addra_givens <= 2'b11;
+                        dina_givens <= {(-1 * sin_data), 8'b0000_0000, 8'b0000_0000, cos_data};
+                        done_writing_givens <= 1'b1;
+                    end
+                    
+                    // case when p = 1 and q is varying
+                    4'b01_00 : begin
+                        ena_givens <= 1'b1;
+                        wea_givens <= 1'b1;
+                        addra_givens <= 2'b01;
+                        dina_givens <= {sin_data, cos_data, 8'b0000_0000, 8'b0000_0000};
+                        addra_givens <= 2'b00;
+                        dina_givens <= {cos_data, (-1 * sin_data), 8'b0000_0000, 8'b0000_0000};
+                        done_writing_givens <= 1'b1;
+                    end
+                    4'b01_10 : begin
+                        ena_givens <= 1'b1;
+                        wea_givens <= 1'b1;
+                        addra_givens <= 2'b01;
+                        dina_givens <= {8'b0000_0000, cos_data, sin_data, 8'b0000_0000};
+                        addra_givens <= 2'b10;
+                        dina_givens <= {8'b0000_0000, (-1 * sin_data), cos_data, 8'b0000_0000};
+                        done_writing_givens <= 1'b1;
+                    end
+                    4'b01_11 : begin
+                        ena_givens <= 1'b1;
+                        wea_givens <= 1'b1;
+                        addra_givens <= 2'b01;
+                        dina_givens <= {8'b0000_0000, cos_data, 8'b0000_0000, sin_data};
+                        addra_givens <= 2'b11;
+                        dina_givens <= {8'b0000_0000, (-1 * sin_data), 8'b0000_0000, cos_data};
+                        done_writing_givens <= 1'b1;
+                    end
+                    
+                    // case when p = 2 and q is varying
+                    4'b10_00 : begin
+                        ena_givens <= 1'b1;
+                        wea_givens <= 1'b1;
+                        addra_givens <= 2'b10;
+                        dina_givens <= {sin_data, 8'b0000_0000, cos_data, 8'b0000_0000};
+                        addra_givens <= 2'b00;
+                        dina_givens <= {cos_data, 8'b0000_0000, (-1 * sin_data), 8'b0000_0000};
+                        done_writing_givens <= 1'b1;
+                    end
+                    4'b10_01 : begin
+                        ena_givens <= 1'b1;
+                        wea_givens <= 1'b1;
+                        addra_givens <= 2'b10;
+                        dina_givens <= {8'b0000_0000, sin_data, cos_data, 8'b0000_0000};
+                        addra_givens <= 2'b01;
+                        dina_givens <= {8'b0000_0000, cos_data, (-1 * sin_data), 8'b0000_0000};
+                        done_writing_givens <= 1'b1;
+                    end
+                    4'b10_11 : begin
+                        ena_givens <= 1'b1;
+                        wea_givens <= 1'b1;
+                        addra_givens <= 2'b10;
+                        dina_givens <= {8'b0000_0000, 8'b0000_0000, cos_data, sin_data};
+                        addra_givens <= 2'b11;
+                        dina_givens <= {8'b0000_0000, 8'b0000_0000, (-1 * sin_data), cos_data};
+                        done_writing_givens <= 1'b1;
+                    end
+                    
+                    // case when p = 3 and q is varying
+                    4'b11_00 : begin
+                        ena_givens <= 1'b1;
+                        wea_givens <= 1'b1;
+                        addra_givens <= 2'b11;
+                        dina_givens <= {8'b0000_0000, 8'b0000_0000, sin_data, cos_data};
+                        addra_givens <= 2'b00;
+                        dina_givens <= {8'b0000_0000, 8'b0000_0000, cos_data, (-1 * sin_data)};
+                        done_writing_givens <= 1'b1;
+                    end
+                    4'b11_01 : begin
+                        ena_givens <= 1'b1;
+                        wea_givens <= 1'b1;
+                        addra_givens <= 2'b11;
+                        dina_givens <= {8'b0000_0000, sin_data, 8'b0000_0000, cos_data};
+                        addra_givens <= 2'b01;
+                        dina_givens <= {8'b0000_0000, cos_data, 8'b0000_0000, (-1 * sin_data)};
+                        done_writing_givens <= 1'b1;
+                    end
+                    4'b11_10 : begin
+                        ena_givens <= 1'b1;
+                        wea_givens <= 1'b1;
+                        addra_givens <= 2'b11;
+                        dina_givens <= {8'b0000_0000, 8'b0000_0000, sin_data, cos_data};
+                        addra_givens <= 2'b10;
+                        dina_givens <= {8'b0000_0000, 8'b0000_0000, cos_data, (-1 * sin_data)};
+                        done_writing_givens <= 1'b1;
+                    end
+                endcase
+            end
         end
     
 endmodule

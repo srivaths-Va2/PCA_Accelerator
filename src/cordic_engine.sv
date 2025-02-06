@@ -88,6 +88,8 @@ module top_CORDIC(
         output_sine_data
     );
     
+    //assign ena_givens = sincos_valid ? 1 : 0;
+    //assign wea_givens = sincos_valid ? 1 : 0;
     
 endmodule
 

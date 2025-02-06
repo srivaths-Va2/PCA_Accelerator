@@ -56,6 +56,7 @@ c_pp, c_qq are also outputted
 
 module data_query_engine#(parameter MATRIX_SIZE = 4, DATA_SIZE = 8)(
     input logic clk,
+    input logic done_TPU,
     input logic [DATA_SIZE-1:0] data_from_TPU [MATRIX_SIZE*MATRIX_SIZE-1:0],
     output logic [1 : 0] p,
     output logic [1 : 0] q,
@@ -92,26 +93,28 @@ module data_query_engine#(parameter MATRIX_SIZE = 4, DATA_SIZE = 8)(
     
     always@(posedge clk)
         begin
-            for(index = 0; index < 16; index = index + 1)
+            if(done_TPU == 1'b1)
                 begin
-                    row = (index / 4);
-                    col = (index % 4);
-                    
-                    // check if row is not equal to column, thus giving us an off-diagonal element
-                    if(row != col)
-                        begin
-                            if(data_from_TPU[index] > c_pq)
-                                begin
-                                    c_pq <= data_from_TPU[index];
-                                    p <= row;
-                                    q <= col;
-                                    c_pp <= data_from_TPU[(p * 4) + p];
-                                    c_qq <= data_from_TPU[(q * 4) + q];
-                                end
-                        end
+                for(index = 0; index < 16; index = index + 1)
+                    begin
+                        row = (index / 4);
+                        col = (index % 4);
+                        
+                        // check if row is not equal to column, thus giving us an off-diagonal element
+                        if(row != col)
+                            begin
+                                if(data_from_TPU[index] > c_pq)
+                                    begin
+                                        c_pq <= data_from_TPU[index];
+                                        p <= row;
+                                        q <= col;
+                                        c_pp <= data_from_TPU[(p * 4) + p];
+                                        c_qq <= data_from_TPU[(q * 4) + q];
+                                    end
+                            end
+                    end
                 end
-        end
-    
+            end
     
     
     

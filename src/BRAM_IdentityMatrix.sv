@@ -4,12 +4,12 @@
 // Engineers: Srivaths Ramasubramanian, Anjali Devarajan, Kousthub Kaivar, Vibha Shrestta, Shashank D
 // 
 // Create Date: 16.01.2025 11:57:11
-// Design Name: BRAM_CovarianceMatrix
-// Module Name: BRAM_CovarianceMatrix
+// Design Name: BRAM_IdentityMatrix
+// Module Name: BRAM_IdentityMatrix
 // Project Name: PCA_Accelerator
 // Target Devices: Xilinx Basys3 FPGA - cpg236
 // Tool Versions: Vivado 2024.1
-// Description: This is a Dual Port BRAM module, which is to store the results of the covariance matrix
+// Description: This is a Dual Port BRAM module, which is to store the Identity matrix for Rotations
 // This is an IP catalog design provided by Vivado
 // 
 // Dependencies: The IP Catalog - Block Memory Generator
@@ -48,7 +48,7 @@ This is a design implemented using Vivado's inbuilt IP Catalog. It is configured
 10) Port B Read Width - 32 bits
 11) Port B Write Depth - 4 bits
 12) Port B Read Depth - 4 bits
-13) Init COE file loaded - No initialisation of memory
+13) Init COE file loaded - Initialisation of memory at ip.coe
 14) Vivado's expected latency = 2 clock cycles
 
 --------------------------------------------------------------------------------------------
@@ -56,35 +56,32 @@ This is a design implemented using Vivado's inbuilt IP Catalog. It is configured
 */
 
 
-module BRAM_CovarianceMatrix(
-        input logic clk,
-        // port A inputs
-        input logic ena_from_TPU,
-        input logic wea_from_TPU,
-        input logic [1:0] addra_from_TPU,
-        input logic [31:0] dina_from_TPU,
-        output logic [31:0] douta_from_TPU,
-        // port B inputs
-        input logic ena_from_rotation,
-        input logic wea_from_rotation,
-        input logic [1:0] addra_from_rotation,
-        input logic [31:0] dina_from_rotation,
-        output logic [31:0] douta_from_rotation
+module BRAM_IdentityMatrix(
+    input logic clk,
+    input logic ena_identity_A,
+    input logic wea_identity_A,
+    input logic [1 : 0] addra_identity_A,
+    input logic [31 : 0] dina_identity_A,
+    output logic [31 : 0] douta_identity_A,
+    input logic ena_identity_B,
+    input logic wea_identity_B,
+    input logic [1 : 0] addra_identity_B,
+    input logic [31 : 0] dina_identity_B,
+    output logic [31 : 0] douta_identity_B
     );
     
-      BRAM_Cov your_instance_name (
+    BRAM_Identity BRAM_I (
       .clka(clk),    // input wire clka
-      .ena(ena_from_TPU),      // input wire ena
-      .wea(wea_from_TPU),      // input wire [0 : 0] wea
-      .addra(addra_from_TPU),  // input wire [1 : 0] addra
-      .dina(dina_from_TPU),    // input wire [31 : 0] dina
-      .douta(douta_from_TPU),  // output wire [31 : 0] douta
+      .ena(ena_identity_A),      // input wire ena
+      .wea(wea_identity_A),      // input wire [0 : 0] wea
+      .addra(addra_identity_A),  // input wire [1 : 0] addra
+      .dina(dina_identity_A),    // input wire [31 : 0] dina
+      .douta(douta_identity_A),  // output wire [31 : 0] douta
       .clkb(clk),    // input wire clkb
-      .enb(ena_from_rotation),      // input wire enb
-      .web(wea_from_rotation),      // input wire [0 : 0] web
-      .addrb(addra_from_rotation),  // input wire [1 : 0] addrb
-      .dinb(dina_from_rotation),    // input wire [31 : 0] dinb
-      .doutb(douta_from_rotation)  // output wire [31 : 0] doutb
+      .enb(ena_identity_B),      // input wire enb
+      .web(wea_identity_B),      // input wire [0 : 0] web
+      .addrb(addra_identity_B),  // input wire [1 : 0] addrb
+      .dinb(dina_identity_B),    // input wire [31 : 0] dinb
+      .doutb(douta_identity_B)  // output wire [31 : 0] doutb
     );
-
 endmodule
