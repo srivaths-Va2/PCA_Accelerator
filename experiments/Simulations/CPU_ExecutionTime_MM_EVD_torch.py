@@ -4,40 +4,39 @@ import pandas as pd
 import scipy.optimize as opt
 import matplotlib.pyplot as plt
 
-# Ensure CUDA is available
-assert torch.cuda.is_available(), "No CUDA device found! Ensure you're running on a machine with an NVIDIA GPU."
-device = torch.device("cuda")
+# Ensure we're using the CPU
+device = torch.device("cpu")
 
-def ensure_on_gpu(tensor, name="Tensor"):
+def ensure_on_cpu(tensor, name="Tensor"):
     """
-    Ensures that a given tensor is located on a CUDA device.
+    Ensures that a given tensor is located on the CPU.
 
     Parameters:
         tensor (torch.Tensor): The tensor to check.
         name (str): The name of the tensor, used in the error message.
 
     Raises:
-        RuntimeError: If the tensor is not on a CUDA device.
+        RuntimeError: If the tensor is not on the CPU device.
     """
-    if not tensor.is_cuda:
-        raise RuntimeError(f"{name} is on {tensor.device}, expected CUDA!")
+    if tensor.is_cuda:
+        raise RuntimeError(f"{name} is on {tensor.device}, expected CPU!")
 
 def matrix_multiplication(A, B):
     """
-    Perform matrix multiplication of two tensors using PyTorch on a CUDA device.
+    Perform matrix multiplication of two tensors using PyTorch on the CPU.
 
     Parameters:
-        A (torch.Tensor): The first matrix, expected to be on a CUDA device.
-        B (torch.Tensor): The second matrix, expected to be on a CUDA device.
+        A (torch.Tensor): The first matrix, expected to be on the CPU.
+        B (torch.Tensor): The second matrix, expected to be on the CPU.
 
     Returns:
-        torch.Tensor: The result of the matrix multiplication, located on a CUDA device.
+        torch.Tensor: The result of the matrix multiplication, located on the CPU.
 
     Raises:
-        RuntimeError: If either matrix is not on a CUDA device.
+        RuntimeError: If either matrix is not on the CPU device.
     """
-    ensure_on_gpu(A, "Matrix A")
-    ensure_on_gpu(B, "Matrix B")
+    ensure_on_cpu(A, "Matrix A")
+    ensure_on_cpu(B, "Matrix B")
     return torch.matmul(A, B)
 
 def classical_jacobi(A, max_iterations=100, tol=1e-10):
@@ -46,7 +45,7 @@ def classical_jacobi(A, max_iterations=100, tol=1e-10):
     of a symmetric matrix A using iterative rotations.
 
     Parameters:
-        A (torch.Tensor): A symmetric matrix to decompose, expected to be on a CUDA device.
+        A (torch.Tensor): A symmetric matrix to decompose, expected to be on the CPU.
         max_iterations (int, optional): The maximum number of iterations to perform. Default is 100.
         tol (float, optional): The tolerance for convergence. Default is 1e-10.
 
@@ -55,9 +54,9 @@ def classical_jacobi(A, max_iterations=100, tol=1e-10):
         torch.Tensor: A matrix whose columns are the eigenvectors of A.
 
     Raises:
-        RuntimeError: If the input matrix A is not on a CUDA device.
+        RuntimeError: If the input matrix A is not on the CPU device.
     """
-    ensure_on_gpu(A, "Matrix A")
+    ensure_on_cpu(A, "Matrix A")
     n = A.shape[0]
     V = torch.eye(n, device=device, dtype=A.dtype)
     for _ in range(max_iterations):
@@ -89,7 +88,7 @@ def classical_jacobi(A, max_iterations=100, tol=1e-10):
 def benchmark(matrix_sizes):
     """
     Benchmark the execution time of matrix multiplication and eigenvalue decomposition
-    using the Classical Jacobi method on a CUDA device for various matrix sizes.
+    using the Classical Jacobi method on the CPU for various matrix sizes.
 
     Parameters:
         matrix_sizes (list of int): A list of integers representing the sizes of the
@@ -98,32 +97,27 @@ def benchmark(matrix_sizes):
     Returns:
         pd.DataFrame: A DataFrame containing the matrix size, time taken for matrix
         multiplication, and time taken for the Classical Jacobi method for each size.
-        The results are also saved to a CSV file named 'GPU_SimResults.csv'.
+        The results are also saved to a CSV file named 'CPU_SimResults.csv'.
     """
     results = []
     for size in matrix_sizes:
         A = torch.rand((size, size), device=device, dtype=torch.float32)
         B = torch.rand((size, size), device=device, dtype=torch.float32)
         
-        torch.cuda.synchronize()
-        start = time.time()
+        start = time.perf_counter()
         C = matrix_multiplication(A, B)
-        torch.cuda.synchronize()
-        multiplication_time = time.time() - start
+        multiplication_time = time.perf_counter() - start
         
-        torch.cuda.synchronize()
-        start = time.time()
+        start = time.perf_counter()
         eigenvalues, eigenvectors = classical_jacobi(C)
-        torch.cuda.synchronize()
-        jacobi_time = time.time() - start
-
-        print("Matrix Multiplication Time = ", multiplication_time)
-        print("Jacobian Time = ", jacobi_time)
+        jacobi_time = time.perf_counter() - start
         
+        print("Matrix Multiplication Time = ", multiplication_time)
+        print("Jacobi Multiplication Time = ", jacobi_time)
         results.append([size, multiplication_time, jacobi_time])
     
     df = pd.DataFrame(results, columns=["Matrix Size", "Multiplication Time (s)", "Jacobi Time (s)"])
-    df.to_csv("GPU_SimResults.csv", index=False)
+    df.to_csv("CPU_SimResults.csv", index=False)
     return df
 
 def fit_curve(x, y):
@@ -156,18 +150,18 @@ def plot_results(df):
     matrix_sizes = torch.tensor(df["Matrix Size"].values, device=device, dtype=torch.float32)
     times = torch.tensor(df["Multiplication Time (s)"].values, device=device, dtype=torch.float32)
     
-    fit_fn, params = fit_curve(matrix_sizes, times)
-    x_fit = torch.linspace(matrix_sizes.min(), matrix_sizes.max(), 100, device=device)
-    y_fit = fit_fn(x_fit)
+    #fit_fn, params = fit_curve(matrix_sizes, times)
+    #x_fit = torch.linspace(matrix_sizes.min(), matrix_sizes.max(), 100, device=device)
+    #y_fit = fit_fn(x_fit)
     
     plt.scatter(matrix_sizes.cpu().numpy(), times.cpu().numpy(), label="Measured Times")
-    plt.plot(x_fit.cpu().numpy(), y_fit.cpu().numpy(), 'r-', label=f"Best Fit: {params}")
+    #plt.plot(x_fit.cpu().numpy(), y_fit.cpu().numpy(), 'r-', label=f"Best Fit: {params}")
     plt.xlabel("Matrix Size")
     plt.ylabel("Execution Time (s)")
     plt.legend()
     plt.show()
 
 if __name__ == "__main__":
-    matrix_sizes = [4]
+    matrix_sizes = [512]
     df = benchmark(matrix_sizes)
     #plot_results(df)
